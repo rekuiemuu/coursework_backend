@@ -33,12 +33,12 @@ export const examinationsAPI = {
   get: (id) => api.get(`/examinations/${id}`),
   create: (data) => api.post('/examinations', data),
   startAnalysis: (id) => api.post(`/examinations/${id}/analyze`),
-  getByPatient: (patientId) => api.get(`/patients/${patientId}/examinations`),
+  getByPatient: (patientId) => api.get(`/examinations/patient/${patientId}`),
 }
 
 export const reportsAPI = {
   get: (id) => api.get(`/reports/${id}`),
-  getByExamination: (examinationId) => api.get(`/examinations/${examinationId}/report`),
+  getByExamination: (examinationId) => api.get(`/reports/examination/${examinationId}`),
   create: (data) => api.post('/reports', data),
 }
 

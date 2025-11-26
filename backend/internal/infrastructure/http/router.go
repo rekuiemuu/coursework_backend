@@ -57,7 +57,6 @@ func (r *Router) Setup() *gin.Engine {
 			patients.PUT("/:id", r.patientHandler.UpdatePatient)
 			patients.DELETE("/:id", r.patientHandler.DeletePatient)
 			patients.GET("", r.patientHandler.ListPatients)
-			patients.GET("/:patientId/examinations", r.examinationHandler.GetPatientExaminations)
 		}
 
 		examinations := api.Group("/examinations")
@@ -65,13 +64,14 @@ func (r *Router) Setup() *gin.Engine {
 			examinations.POST("", r.examinationHandler.CreateExamination)
 			examinations.GET("/:id", r.examinationHandler.GetExamination)
 			examinations.POST("/:id/analyze", r.examinationHandler.StartAnalysis)
-			examinations.GET("/:examinationId/report", r.reportHandler.GetExaminationReport)
+			examinations.GET("/patient/:patientId", r.examinationHandler.GetPatientExaminations)
 		}
 
 		reports := api.Group("/reports")
 		{
 			reports.POST("", r.reportHandler.CreateReport)
-			reports.GET("/:id", r.reportHandler.GetReport)
+				reports.GET("/:id", r.reportHandler.GetReport)
+				reports.GET("/examination/:examinationId", r.reportHandler.GetExaminationReport)
 		}
 	}
 

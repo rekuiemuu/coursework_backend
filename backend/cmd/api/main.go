@@ -37,7 +37,7 @@ func main() {
 	analysisRepo := postgres.NewAnalysisRepository(db.DB)
 	reportRepo := postgres.NewReportRepository(db.DB)
 	userRepo := postgres.NewUserRepository(db.DB)
-	deviceRepo := postgres.NewDeviceRepository(db.DB)
+	_ = postgres.NewDeviceRepository(db.DB)
 
 	mqPublisher, err := mq.NewRabbitMQ(cfg.RabbitMQ.URL, cfg.RabbitMQ.QueueName)
 	if err != nil {
