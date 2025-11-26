@@ -40,6 +40,8 @@ export default function PatientsPage() {
   const columns = [
     { title: 'Фамилия', dataIndex: 'last_name', key: 'last_name' },
     { title: 'Имя', dataIndex: 'first_name', key: 'first_name' },
+    { title: 'Отчество', dataIndex: 'middle_name', key: 'middle_name' },
+    { title: 'Пол', dataIndex: 'gender', key: 'gender', render: (g) => g === 'male' ? 'Муж' : 'Жен' },
     { title: 'Телефон', dataIndex: 'phone', key: 'phone' },
     { title: 'Email', dataIndex: 'email', key: 'email' },
   ]

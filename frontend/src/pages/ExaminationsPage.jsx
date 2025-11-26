@@ -3,6 +3,7 @@ import { Table, Button, Tag, Modal, Form, Select, Input, message, Space } from '
 import { PlusOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { examinationsAPI, patientsAPI } from '../api'
+import DevicePanel from '../components/DevicePanel'
 
 const statusColors = {
   pending: 'default',
@@ -93,7 +94,6 @@ export default function ExaminationsPage() {
   }
 
   const columns = [
-    { title: 'ID', dataIndex: 'id', key: 'id' },
     {
       title: 'Пациент',
       dataIndex: 'patient_id',
@@ -116,7 +116,7 @@ export default function ExaminationsPage() {
       title: 'Создано',
       dataIndex: 'created_at',
       key: 'created_at',
-      render: (value) => (value ? new Date(value).toLocaleString() : ''),
+      render: (value) => (value ? new Date(value).toLocaleString('ru-RU') : ''),
     },
     {
       title: 'Действия',
@@ -140,6 +140,7 @@ export default function ExaminationsPage() {
           </Button>
         </Space>
       </div>
+      <DevicePanel />
       <Table dataSource={examinations} columns={columns} loading={loading} rowKey="id" />
       <Modal
         title="Создать исследование"
