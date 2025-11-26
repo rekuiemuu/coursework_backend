@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: capillary_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/internal/infrastructure/db/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - capillary_network
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - capillary_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./deploy/docker/backend.Dockerfile
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: capillary_db
+      DB_SSLMODE: disable
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      RABBITMQ_QUEUE: analysis_tasks
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8080
+      PHOTO_STORAGE_PATH: /app/storage/photos
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - rabbitmq
+    volumes:
+      - photo_storage:/app/storage/photos
+    networks:
+      - capillary_network
+
+  worker:
+    build:
+      context: .
+      dockerfile: ./deploy/docker/backend.Dockerfile
+      target: worker
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: capillary_db
+      DB_SSLMODE: disable
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      RABBITMQ_QUEUE: analysis_tasks
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - capillary_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../deploy/docker/frontend.Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - capillary_network
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./deploy/docker/nginx.Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - capillary_network
+
+volumes:
+  postgres_data:
+  photo_storage:
+
+networks:
+  capillary_network:
+    driver: bridge
