@@ -62,6 +62,7 @@ func (r *Router) Setup() *gin.Engine {
 		examinations := api.Group("/examinations")
 		{
 			examinations.POST("", r.examinationHandler.CreateExamination)
+			examinations.GET("", r.examinationHandler.ListExaminations)
 			examinations.GET("/:id", r.examinationHandler.GetExamination)
 			examinations.POST("/:id/analyze", r.examinationHandler.StartAnalysis)
 			examinations.GET("/patient/:patientId", r.examinationHandler.GetPatientExaminations)
@@ -70,10 +71,14 @@ func (r *Router) Setup() *gin.Engine {
 		reports := api.Group("/reports")
 		{
 			reports.POST("", r.reportHandler.CreateReport)
-				reports.GET("/:id", r.reportHandler.GetReport)
-				reports.GET("/examination/:examinationId", r.reportHandler.GetExaminationReport)
+			reports.GET("/:id", r.reportHandler.GetReport)
+			reports.GET("/examination/:examinationId", r.reportHandler.GetExaminationReport)
 		}
 	}
+
+	api.GET("/photos/:filename", func(c *gin.Context) {
+		r.deviceManager.ServePhoto(c.Writer, c.Request, c.Param("filename"))
+	})
 
 	router.GET("/ws", func(c *gin.Context) {
 		r.deviceManager.HandleWebSocket(c.Writer, c.Request)

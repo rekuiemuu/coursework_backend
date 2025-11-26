@@ -56,6 +56,30 @@ func (uc *ExaminationUseCase) CreateExamination(ctx context.Context, req dto.Cre
 	}, nil
 }
 
+func (uc *ExaminationUseCase) ListExaminations(ctx context.Context, limit, offset int) ([]*dto.ExaminationResponse, error) {
+	examinations, err := uc.examinationRepo.List(ctx, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	var response []*dto.ExaminationResponse
+	for _, examination := range examinations {
+		response = append(response, &dto.ExaminationResponse{
+			ID:          examination.ID,
+			PatientID:   examination.PatientID,
+			DoctorID:    examination.DoctorID,
+			Status:      string(examination.Status),
+			Description: examination.Description,
+			Images:      examination.Images,
+			CreatedAt:   examination.CreatedAt,
+			UpdatedAt:   examination.UpdatedAt,
+			CompletedAt: examination.CompletedAt,
+		})
+	}
+
+	return response, nil
+}
+
 func (uc *ExaminationUseCase) GetExamination(ctx context.Context, id string) (*dto.ExaminationResponse, error) {
 	examination, err := uc.examinationRepo.GetByID(ctx, id)
 	if err != nil || examination == nil {

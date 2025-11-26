@@ -13,6 +13,7 @@ export default function LoginPage() {
     try {
       const response = await authAPI.login(values)
       localStorage.setItem('token', response.data.data.token)
+      localStorage.setItem('user', JSON.stringify(response.data.data.user))
       message.success('Вход выполнен успешно')
       navigate('/')
     } catch (error) {
