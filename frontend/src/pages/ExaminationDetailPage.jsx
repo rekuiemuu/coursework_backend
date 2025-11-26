@@ -29,8 +29,10 @@ export default function ExaminationDetailPage() {
   const startAnalysis = async () => {
     try {
       await examinationsAPI.startAnalysis(id)
-      message.success('Анализ запущен')
-      loadExamination()
+      message.success('Анализ запущен! Переход к отчётам...')
+      setTimeout(() => {
+        navigate('/reports')
+      }, 1500)
     } catch (error) {
       message.error('Ошибка запуска анализа')
     }
@@ -48,7 +50,7 @@ export default function ExaminationDetailPage() {
         </Button>
         <Space>
           <Button onClick={loadExamination}>Обновить</Button>
-          <Button type="primary" onClick={startAnalysis}>
+          <Button type="primary" danger onClick={startAnalysis}>
             Запустить анализ
           </Button>
         </Space>
@@ -70,7 +72,7 @@ export default function ExaminationDetailPage() {
         </Descriptions>
       </Card>
       <Divider />
-      <DevicePanel title="Управление камерой для исследования" />
+      <DevicePanel title="Управление камерой для исследования" examinationId={id} />
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import { Layout, Menu } from 'antd'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { UserOutlined, ExperimentOutlined, LogoutOutlined } from '@ant-design/icons'
+import { UserOutlined, ExperimentOutlined, LogoutOutlined, FileTextOutlined } from '@ant-design/icons'
 
 const { Sider, Content } = Layout
 
@@ -17,6 +17,7 @@ export default function MainLayout() {
   const menuItems = [
     { key: '/patients', label: 'Пациенты', icon: <UserOutlined /> },
     { key: '/examinations', label: 'Исследования', icon: <ExperimentOutlined /> },
+    { key: '/reports', label: 'Отчеты', icon: <FileTextOutlined /> },
     { type: 'divider' },
     { key: 'logout', label: 'Выход', icon: <LogoutOutlined />, danger: true },
   ]

@@ -97,3 +97,28 @@ func (uc *ReportUseCase) GetReportByExamination(ctx context.Context, examination
 		UpdatedAt:       report.UpdatedAt,
 	}, nil
 }
+
+func (uc *ReportUseCase) ListReports(ctx context.Context, limit, offset int) ([]*dto.ReportResponse, error) {
+	reports, err := uc.reportRepo.List(ctx, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	var response []*dto.ReportResponse
+	for _, report := range reports {
+		response = append(response, &dto.ReportResponse{
+			ID:              report.ID,
+			ExaminationID:   report.ExaminationID,
+			Title:           report.Title,
+			Content:         report.Content,
+			Summary:         report.Summary,
+			Diagnosis:       report.Diagnosis,
+			Recommendations: report.Recommendations,
+			GeneratedBy:     report.GeneratedBy,
+			CreatedAt:       report.CreatedAt,
+			UpdatedAt:       report.UpdatedAt,
+		})
+	}
+
+	return response, nil
+}

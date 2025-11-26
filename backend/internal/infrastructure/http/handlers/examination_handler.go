@@ -117,3 +117,31 @@ func (h *ExaminationHandler) GetPatientExaminations(c *gin.Context) {
 		Data:    examinations,
 	})
 }
+
+func (h *ExaminationHandler) AttachPhotos(c *gin.Context) {
+	id := c.Param("id")
+	var req dto.AttachPhotosRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Error:   "validation_error",
+			Message: err.Error(),
+			Code:    http.StatusBadRequest,
+		})
+		return
+	}
+
+	err := h.examinationUseCase.AttachPhotos(c.Request.Context(), id, req.Photos)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Error:   "internal_error",
+			Message: err.Error(),
+			Code:    http.StatusInternalServerError,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.SuccessResponse{
+		Success: true,
+		Message: "Photos attached successfully",
+	})
+}

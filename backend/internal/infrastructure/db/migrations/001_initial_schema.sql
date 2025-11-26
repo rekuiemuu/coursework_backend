@@ -70,10 +70,10 @@ CREATE TABLE IF NOT EXISTS images (
     examination_id UUID NOT NULL REFERENCES examinations(id) ON DELETE CASCADE,
     filename VARCHAR(255) NOT NULL,
     file_path TEXT NOT NULL,
-    file_size BIGINT NOT NULL CHECK (file_size > 0),
+    file_size BIGINT NOT NULL CHECK (file_size >= 0),
     mime_type VARCHAR(100) NOT NULL,
-    width INTEGER NOT NULL CHECK (width > 0),
-    height INTEGER NOT NULL CHECK (height > 0),
+    width INTEGER NOT NULL CHECK (width >= 0),
+    height INTEGER NOT NULL CHECK (height >= 0),
     captured_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

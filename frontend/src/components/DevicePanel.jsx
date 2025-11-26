@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { Card, Button, List, message, Select, Tag } from 'antd'
+import { Card, Button, List, message, Select, Tag, Checkbox } from 'antd'
 import { CameraOutlined, PlayCircleOutlined, StopOutlined, ReloadOutlined } from '@ant-design/icons'
+import { examinationsAPI } from '../api'
 
-export default function DevicePanel({ title = 'Управление камерой' }) {
+export default function DevicePanel({ title = 'Управление камерой', examinationId }) {
   const [wsStatus, setWsStatus] = useState('disconnected')
   const [photos, setPhotos] = useState([])
+  const [selectedPhotos, setSelectedPhotos] = useState([])
   const [cameras, setCameras] = useState([])
   const [selectedCamera, setSelectedCamera] = useState('')
   const [streaming, setStreaming] = useState(false)
@@ -13,7 +15,7 @@ export default function DevicePanel({ title = 'Управление камеро
   const socketRef = useRef(null)
 
   useEffect(() => {
-    loadCameras()
+    requestCameraPermission()
     const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
     const socket = new WebSocket(`${protocol}://${window.location.host}/ws`)
     socketRef.current = socket
@@ -43,18 +45,30 @@ export default function DevicePanel({ title = 'Управление камеро
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const requestCameraPermission = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      stream.getTracks().forEach(track => track.stop())
+      await loadCameras()
+    } catch (error) {
+      message.error('Нет доступа к камере. Разрешите доступ в браузере.')
+    }
+  }
+
   const loadCameras = async () => {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices()
       const videoDevices = devices.filter(d => d.kind === 'videoinput')
       setCameras(videoDevices)
-      const microscope = videoDevices.find(d => 
-        d.label.toLowerCase().includes('microsope') || 
-        d.label.toLowerCase().includes('04f2') ||
-        d.label.toLowerCase().includes('3008')
-      )
+      
+      const microscope = videoDevices.find(d => {
+        const label = d.label.toLowerCase()
+        return label.includes('microsope') || label.includes('04f2') || label.includes('3008')
+      })
+      
       if (microscope) {
         setSelectedCamera(microscope.deviceId)
+        message.info(`Найден капилляроскоп: ${microscope.label}`)
       } else if (videoDevices.length > 0) {
         setSelectedCamera(videoDevices[0].deviceId)
       }
@@ -136,6 +150,20 @@ export default function DevicePanel({ title = 'Управление камеро
     }
   }
 
+  const attachPhotosToExamination = async () => {
+    try {
+      await examinationsAPI.attachPhotos(examinationId, selectedPhotos)
+      message.success(`Прикреплено ${selectedPhotos.length} фото к исследованию`)
+      
+      // Запускаем анализ
+      await examinationsAPI.startAnalysis(examinationId)
+      message.success('Анализ запущен! Результаты появятся в отчётах через несколько секунд')
+      setSelectedPhotos([])
+    } catch (error) {
+      message.error('Ошибка прикрепления фото: ' + (error.response?.data?.message || error.message))
+    }
+  }
+
   return (
     <Card 
       title={<span style={{ fontSize: 16, fontWeight: 600 }}>{title}</span>}
@@ -167,13 +195,19 @@ export default function DevicePanel({ title = 'Управление камеро
               onChange={setSelectedCamera}
               style={{ flex: 1, minWidth: 200 }}
               placeholder="Выберите камеру"
+              notFoundContent="Камеры не найдены"
             >
-              {cameras.map(cam => (
-                <Select.Option key={cam.deviceId} value={cam.deviceId}>
-                  {cam.label.toLowerCase().includes('microsope') ? '🔬 ' : ''}
-                  {cam.label || cam.deviceId}
-                </Select.Option>
-              ))}
+              {cameras.map(cam => {
+                const isMicroscope = cam.label.toLowerCase().includes('microsope') || 
+                                     cam.label.toLowerCase().includes('04f2') ||
+                                     cam.label.toLowerCase().includes('3008')
+                return (
+                  <Select.Option key={cam.deviceId} value={cam.deviceId}>
+                    {isMicroscope ? '🔬 ' : '🎥 '}
+                    {cam.label || `Камера ${cam.deviceId.substring(0, 8)}`}
+                  </Select.Option>
+                )
+              })}
             </Select>
             {!streaming ? (
               <Button type="primary" danger icon={<PlayCircleOutlined />} onClick={startCamera}>
@@ -193,7 +227,9 @@ export default function DevicePanel({ title = 'Управление камеро
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>Сохраненные фото</div>
+          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>
+            Сохраненные фото {photos.length > 0 && `(${photos.length})`}
+          </div>
           <List
             size="small"
             dataSource={photos}
@@ -207,6 +243,19 @@ export default function DevicePanel({ title = 'Управление камеро
                   </a>
                 ]}
               >
+                {examinationId && (
+                  <Checkbox
+                    checked={selectedPhotos.includes(item.filename)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedPhotos([...selectedPhotos, item.filename])
+                      } else {
+                        setSelectedPhotos(selectedPhotos.filter(p => p !== item.filename))
+                      }
+                    }}
+                    style={{ marginRight: 8 }}
+                  />
+                )}
                 <List.Item.Meta
                   title={<span style={{ fontSize: 13 }}>{item?.filename}</span>}
                   description={
@@ -218,6 +267,17 @@ export default function DevicePanel({ title = 'Управление камеро
               </List.Item>
             )}
           />
+          {examinationId && selectedPhotos.length > 0 && (
+            <Button 
+              type="primary" 
+              danger
+              block 
+              style={{ marginTop: 12 }}
+              onClick={attachPhotosToExamination}
+            >
+              Прикрепить {selectedPhotos.length} фото к анализу
+            </Button>
+          )}
         </div>
       </div>
     </Card>

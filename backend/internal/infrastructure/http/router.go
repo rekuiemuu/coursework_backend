@@ -64,12 +64,14 @@ func (r *Router) Setup() *gin.Engine {
 			examinations.POST("", r.examinationHandler.CreateExamination)
 			examinations.GET("", r.examinationHandler.ListExaminations)
 			examinations.GET("/:id", r.examinationHandler.GetExamination)
+			examinations.POST("/:id/photos", r.examinationHandler.AttachPhotos)
 			examinations.POST("/:id/analyze", r.examinationHandler.StartAnalysis)
 			examinations.GET("/patient/:patientId", r.examinationHandler.GetPatientExaminations)
 		}
 
 		reports := api.Group("/reports")
 		{
+			reports.GET("", r.reportHandler.ListReports)
 			reports.POST("", r.reportHandler.CreateReport)
 			reports.GET("/:id", r.reportHandler.GetReport)
 			reports.GET("/examination/:examinationId", r.reportHandler.GetExaminationReport)

@@ -6,6 +6,7 @@ import PatientsPage from '../pages/PatientsPage'
 import ExaminationsPage from '../pages/ExaminationsPage'
 import ExaminationDetailPage from '../pages/ExaminationDetailPage'
 import ReportPage from '../pages/ReportPage'
+import ReportsPage from '../pages/ReportsPage'
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +32,10 @@ export const router = createBrowserRouter([
       {
         path: 'examinations/:id',
         element: <ExaminationDetailPage />,
+      },
+      {
+        path: 'reports',
+        element: <ReportsPage />,
       },
       {
         path: 'reports/:id',

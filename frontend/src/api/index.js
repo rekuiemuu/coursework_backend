@@ -32,11 +32,13 @@ export const examinationsAPI = {
   list: (params) => api.get('/examinations', { params }),
   get: (id) => api.get(`/examinations/${id}`),
   create: (data) => api.post('/examinations', data),
+  attachPhotos: (id, photos) => api.post(`/examinations/${id}/photos`, { photos }),
   startAnalysis: (id) => api.post(`/examinations/${id}/analyze`),
   getByPatient: (patientId) => api.get(`/examinations/patient/${patientId}`),
 }
 
 export const reportsAPI = {
+  list: (params) => api.get('/reports', { params }),
   get: (id) => api.get(`/reports/${id}`),
   getByExamination: (examinationId) => api.get(`/reports/examination/${examinationId}`),
   create: (data) => api.post('/reports', data),

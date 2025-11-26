@@ -8,6 +8,10 @@ type CreateExaminationRequest struct {
 	Description string `json:"description"`
 }
 
+type AttachPhotosRequest struct {
+	Photos []string `json:"photos" binding:"required"`
+}
+
 type UpdateExaminationRequest struct {
 	Description string `json:"description"`
 	Status      string `json:"status"`

@@ -6,6 +6,7 @@ import PatientsPage from './pages/PatientsPage'
 import ExaminationsPage from './pages/ExaminationsPage'
 import ExaminationDetailPage from './pages/ExaminationDetailPage'
 import ReportPage from './pages/ReportPage'
+import ReportsPage from './pages/ReportsPage'
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token')
@@ -22,6 +23,7 @@ function App() {
         <Route path="patients" element={<PatientsPage />} />
         <Route path="examinations" element={<ExaminationsPage />} />
         <Route path="examinations/:id" element={<ExaminationDetailPage />} />
+        <Route path="reports" element={<ReportsPage />} />
         <Route path="reports/:id" element={<ReportPage />} />
       </Route>
     </Routes>

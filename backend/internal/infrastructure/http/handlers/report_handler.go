@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/project-capillary/backend/internal/application/dto"
@@ -76,5 +77,25 @@ func (h *ReportHandler) GetExaminationReport(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.SuccessResponse{
 		Success: true,
 		Data:    report,
+	})
+}
+
+func (h *ReportHandler) ListReports(c *gin.Context) {
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
+	offset, _ := strconv.Atoi(c.DefaultQuery("offset", "0"))
+
+	reports, err := h.reportUseCase.ListReports(c.Request.Context(), limit, offset)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Error:   "internal_error",
+			Message: err.Error(),
+			Code:    http.StatusInternalServerError,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.SuccessResponse{
+		Success: true,
+		Data:    reports,
 	})
 }

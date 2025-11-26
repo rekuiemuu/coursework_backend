@@ -152,3 +152,32 @@ func (uc *ExaminationUseCase) GetExaminationsByPatient(ctx context.Context, pati
 	}
 	return response, nil
 }
+
+func (uc *ExaminationUseCase) AttachPhotos(ctx context.Context, examinationID string, photoFilenames []string) error {
+	examination, err := uc.examinationRepo.GetByID(ctx, examinationID)
+	if err != nil || examination == nil {
+		return err
+	}
+
+	for _, filename := range photoFilenames {
+		image := entities.NewImage(
+			uuid.New().String(),
+			examinationID,
+			filename,
+			"/app/storage/photos/"+filename,
+			"image/jpeg",
+			0,
+			0,
+			0,
+		)
+
+		err = uc.imageRepo.Create(ctx, image)
+		if err != nil {
+			continue
+		}
+
+		examination.AddImage(image.ID)
+	}
+
+	return uc.examinationRepo.Update(ctx, examination)
+}
