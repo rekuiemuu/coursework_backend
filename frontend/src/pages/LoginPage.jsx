@@ -41,8 +41,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <Card title="Капилляроскопия" className="w-96">
+    <div className="min-h-screen flex items-center justify-center" style={{ background: '#fef2f2' }}>
+      <Card title="Капилляроскопия" className="w-96" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
         <Tabs
           items={[
             {

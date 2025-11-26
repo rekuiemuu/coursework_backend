@@ -1,8 +1,8 @@
-import { Layout, Menu, Button } from 'antd'
+import { Layout, Menu } from 'antd'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { UserOutlined, ExperimentOutlined, LogoutOutlined } from '@ant-design/icons'
 
-const { Header, Content, Footer } = Layout
+const { Sider, Content } = Layout
 
 export default function MainLayout() {
   const navigate = useNavigate()
@@ -17,39 +17,55 @@ export default function MainLayout() {
   const menuItems = [
     { key: '/patients', label: 'Пациенты', icon: <UserOutlined /> },
     { key: '/examinations', label: 'Исследования', icon: <ExperimentOutlined /> },
+    { type: 'divider' },
+    { key: 'logout', label: 'Выход', icon: <LogoutOutlined />, danger: true },
   ]
 
+  const handleMenuClick = ({ key }) => {
+    if (key === 'logout') {
+      handleLogout()
+    } else {
+      navigate(key)
+    }
+  }
+
   return (
-    <Layout className="min-h-screen">
-      <Header className="flex items-center justify-between">
-        <div className="flex items-center flex-1">
-          <div className="text-white text-xl font-bold mr-8">Капилляроскопия</div>
-          <Menu
-            theme="dark"
-            mode="horizontal"
-            selectedKeys={[location.pathname]}
-            items={menuItems}
-            onClick={({ key }) => navigate(key)}
-            className="flex-1"
-          />
+    <Layout style={{ minHeight: '100vh' }}>
+      <Sider
+        width={240}
+        style={{
+          background: '#7f1d1d',
+          boxShadow: '2px 0 8px rgba(0,0,0,0.1)',
+        }}
+      >
+        <div style={{
+          height: 64,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          fontSize: 18,
+          fontWeight: 600,
+          borderBottom: '1px solid rgba(255,255,255,0.1)',
+        }}>
+          Капилляроскопия
         </div>
-        <Button
-          type="text"
-          icon={<LogoutOutlined />}
-          onClick={handleLogout}
-          className="text-white hover:text-gray-300"
-        >
-          Выход
-        </Button>
-      </Header>
-      <Content className="p-8">
-        <div className="bg-white p-6 rounded-lg min-h-full">
-          <Outlet />
-        </div>
-      </Content>
-      <Footer className="text-center">
-        Капилляроскопия ©2025
-      </Footer>
+        <Menu
+          theme="dark"
+          mode="inline"
+          selectedKeys={[location.pathname]}
+          items={menuItems}
+          onClick={handleMenuClick}
+          style={{ background: 'transparent', border: 'none' }}
+        />
+      </Sider>
+      <Layout>
+        <Content style={{ padding: 24, background: '#f5f5f5' }}>
+          <div style={{ background: 'white', padding: 24, borderRadius: 8, minHeight: '100%' }}>
+            <Outlet />
+          </div>
+        </Content>
+      </Layout>
     </Layout>
   )
 }
