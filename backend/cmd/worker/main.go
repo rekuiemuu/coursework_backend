@@ -41,8 +41,9 @@ func main() {
 	examinationRepo := postgres.NewExaminationRepository(db.DB)
 	reportRepo := postgres.NewReportRepository(db.DB)
 	userRepo := postgres.NewUserRepository(db.DB)
+	imageRepo := postgres.NewImageRepository(db.DB)
 
-	reportUseCase := usecases.NewReportUseCase(reportRepo, examinationRepo, analysisRepo)
+	reportUseCase := usecases.NewReportUseCase(reportRepo, examinationRepo, analysisRepo, imageRepo)
 
 	mqConsumer, err := mq.NewRabbitMQ(cfg.RabbitMQ.URL, cfg.RabbitMQ.QueueName)
 	if err != nil {

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Card, Spin, Descriptions, Button, message, Tag, Divider } from 'antd'
-import { ArrowLeftOutlined, FileTextOutlined } from '@ant-design/icons'
+import { Card, Spin, Descriptions, Button, message, Tag, Divider, Image, Modal, Input, Form } from 'antd'
+import { ArrowLeftOutlined, FileTextOutlined, EditOutlined } from '@ant-design/icons'
 import { reportsAPI, examinationsAPI, patientsAPI } from '../api'
+
+const { TextArea } = Input
 
 export default function ReportPage() {
   const { id } = useParams()
@@ -11,6 +13,8 @@ export default function ReportPage() {
   const [examination, setExamination] = useState(null)
   const [patient, setPatient] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [editModalVisible, setEditModalVisible] = useState(false)
+  const [form] = Form.useForm()
 
   useEffect(() => {
     loadReport()
@@ -56,11 +60,38 @@ export default function ReportPage() {
     return minutes > 0 ? `${minutes} мин` : '< 1 мин'
   }
 
+  const handleEdit = () => {
+    form.setFieldsValue({
+      content: report.content,
+      summary: report.summary,
+      diagnosis: report.diagnosis,
+      recommendations: report.recommendations,
+    })
+    setEditModalVisible(true)
+  }
+
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields()
+      await reportsAPI.update(id, values)
+      message.success('Отчет обновлен')
+      setEditModalVisible(false)
+      loadReport()
+    } catch (error) {
+      message.error('Ошибка обновления отчета')
+    }
+  }
+
   return (
     <div>
-      <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/reports')} style={{ marginBottom: 16 }}>
-        К списку отчетов
-      </Button>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/reports')}>
+          К списку отчетов
+        </Button>
+        <Button type="primary" icon={<EditOutlined />} onClick={handleEdit}>
+          Редактировать
+        </Button>
+      </div>
       
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
         <FileTextOutlined style={{ fontSize: 32, color: '#dc2626' }} />
@@ -125,6 +156,49 @@ export default function ReportPage() {
           </Descriptions.Item>
         </Descriptions>
       </Card>
+
+      {report.images && report.images.length > 0 && (
+        <Card title="Изображения исследования" style={{ marginTop: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
+            <Image.PreviewGroup>
+              {report.images.map((img) => (
+                <Image
+                  key={img.id}
+                  src={img.url}
+                  alt={img.filename}
+                  style={{ width: '100%', height: 200, objectFit: 'cover', borderRadius: 8 }}
+                  fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+                />
+              ))}
+            </Image.PreviewGroup>
+          </div>
+        </Card>
+      )}
+
+      <Modal
+        title="Редактировать отчет"
+        open={editModalVisible}
+        onOk={handleSave}
+        onCancel={() => setEditModalVisible(false)}
+        width={800}
+        okText="Сохранить"
+        cancelText="Отмена"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item name="summary" label="Краткое содержание">
+            <TextArea rows={3} />
+          </Form.Item>
+          <Form.Item name="diagnosis" label="Диагноз">
+            <TextArea rows={3} />
+          </Form.Item>
+          <Form.Item name="recommendations" label="Рекомендации">
+            <TextArea rows={3} />
+          </Form.Item>
+          <Form.Item name="content" label="Подробное описание">
+            <TextArea rows={6} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   )
 }

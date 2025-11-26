@@ -99,3 +99,31 @@ func (h *ReportHandler) ListReports(c *gin.Context) {
 		Data:    reports,
 	})
 }
+
+func (h *ReportHandler) UpdateReport(c *gin.Context) {
+	id := c.Param("id")
+	var req dto.UpdateReportRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Error:   "validation_error",
+			Message: err.Error(),
+			Code:    http.StatusBadRequest,
+		})
+		return
+	}
+
+	report, err := h.reportUseCase.UpdateReport(c.Request.Context(), id, req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Error:   "internal_error",
+			Message: err.Error(),
+			Code:    http.StatusInternalServerError,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.SuccessResponse{
+		Success: true,
+		Data:    report,
+	})
+}

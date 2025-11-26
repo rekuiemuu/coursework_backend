@@ -42,6 +42,7 @@ export const reportsAPI = {
   get: (id) => api.get(`/reports/${id}`),
   getByExamination: (examinationId) => api.get(`/reports/examination/${examinationId}`),
   create: (data) => api.post('/reports', data),
+  update: (id, data) => api.put(`/reports/${id}`, data),
 }
 
 export default api

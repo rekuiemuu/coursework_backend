@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/project-capillary/backend/internal/application/dto"
@@ -13,17 +14,20 @@ type ReportUseCase struct {
 	reportRepo      repositories.ReportRepository
 	examinationRepo repositories.ExaminationRepository
 	analysisRepo    repositories.AnalysisRepository
+	imageRepo       repositories.ImageRepository
 }
 
 func NewReportUseCase(
 	reportRepo repositories.ReportRepository,
 	examinationRepo repositories.ExaminationRepository,
 	analysisRepo repositories.AnalysisRepository,
+	imageRepo repositories.ImageRepository,
 ) *ReportUseCase {
 	return &ReportUseCase{
 		reportRepo:      reportRepo,
 		examinationRepo: examinationRepo,
 		analysisRepo:    analysisRepo,
+		imageRepo:       imageRepo,
 	}
 }
 
@@ -64,24 +68,18 @@ func (uc *ReportUseCase) GetReport(ctx context.Context, id string) (*dto.ReportR
 		return nil, err
 	}
 
-	return &dto.ReportResponse{
-		ID:              report.ID,
-		ExaminationID:   report.ExaminationID,
-		Title:           report.Title,
-		Content:         report.Content,
-		Summary:         report.Summary,
-		Diagnosis:       report.Diagnosis,
-		Recommendations: report.Recommendations,
-		GeneratedBy:     report.GeneratedBy,
-		CreatedAt:       report.CreatedAt,
-		UpdatedAt:       report.UpdatedAt,
-	}, nil
-}
+	images, err := uc.imageRepo.GetByExaminationID(ctx, report.ExaminationID)
+	if err != nil {
+		images = []*entities.Image{}
+	}
 
-func (uc *ReportUseCase) GetReportByExamination(ctx context.Context, examinationID string) (*dto.ReportResponse, error) {
-	report, err := uc.reportRepo.GetByExaminationID(ctx, examinationID)
-	if err != nil || report == nil {
-		return nil, err
+	imageInfos := make([]dto.ImageInfo, 0, len(images))
+	for _, img := range images {
+		imageInfos = append(imageInfos, dto.ImageInfo{
+			ID:       img.ID,
+			Filename: img.Filename,
+			URL:      "/api/photos/" + img.Filename,
+		})
 	}
 
 	return &dto.ReportResponse{
@@ -93,6 +91,42 @@ func (uc *ReportUseCase) GetReportByExamination(ctx context.Context, examination
 		Diagnosis:       report.Diagnosis,
 		Recommendations: report.Recommendations,
 		GeneratedBy:     report.GeneratedBy,
+		Images:          imageInfos,
+		CreatedAt:       report.CreatedAt,
+		UpdatedAt:       report.UpdatedAt,
+	}, nil
+}
+
+func (uc *ReportUseCase) GetReportByExamination(ctx context.Context, examinationID string) (*dto.ReportResponse, error) {
+	report, err := uc.reportRepo.GetByExaminationID(ctx, examinationID)
+	if err != nil || report == nil {
+		return nil, err
+	}
+
+	images, err := uc.imageRepo.GetByExaminationID(ctx, examinationID)
+	if err != nil {
+		images = []*entities.Image{}
+	}
+
+	imageInfos := make([]dto.ImageInfo, 0, len(images))
+	for _, img := range images {
+		imageInfos = append(imageInfos, dto.ImageInfo{
+			ID:       img.ID,
+			Filename: img.Filename,
+			URL:      "/api/photos/" + img.Filename,
+		})
+	}
+
+	return &dto.ReportResponse{
+		ID:              report.ID,
+		ExaminationID:   report.ExaminationID,
+		Title:           report.Title,
+		Content:         report.Content,
+		Summary:         report.Summary,
+		Diagnosis:       report.Diagnosis,
+		Recommendations: report.Recommendations,
+		GeneratedBy:     report.GeneratedBy,
+		Images:          imageInfos,
 		CreatedAt:       report.CreatedAt,
 		UpdatedAt:       report.UpdatedAt,
 	}, nil
@@ -121,4 +155,33 @@ func (uc *ReportUseCase) ListReports(ctx context.Context, limit, offset int) ([]
 	}
 
 	return response, nil
+}
+
+func (uc *ReportUseCase) UpdateReport(ctx context.Context, id string, req dto.UpdateReportRequest) (*dto.ReportResponse, error) {
+	report, err := uc.reportRepo.GetByID(ctx, id)
+	if err != nil || report == nil {
+		return nil, err
+	}
+
+	if req.Content != "" {
+		report.Content = req.Content
+	}
+	if req.Summary != "" {
+		report.Summary = req.Summary
+	}
+	if req.Diagnosis != "" {
+		report.Diagnosis = req.Diagnosis
+	}
+	if req.Recommendations != "" {
+		report.Recommendations = req.Recommendations
+	}
+
+	report.UpdatedAt = time.Now()
+
+	err = uc.reportRepo.Update(ctx, report)
+	if err != nil {
+		return nil, err
+	}
+
+	return uc.GetReport(ctx, id)
 }

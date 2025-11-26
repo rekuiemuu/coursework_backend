@@ -74,6 +74,7 @@ func (r *Router) Setup() *gin.Engine {
 			reports.GET("", r.reportHandler.ListReports)
 			reports.POST("", r.reportHandler.CreateReport)
 			reports.GET("/:id", r.reportHandler.GetReport)
+			reports.PUT("/:id", r.reportHandler.UpdateReport)
 			reports.GET("/examination/:examinationId", r.reportHandler.GetExaminationReport)
 		}
 	}

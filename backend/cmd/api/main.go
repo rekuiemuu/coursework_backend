@@ -49,7 +49,7 @@ func main() {
 
 	patientUseCase := usecases.NewPatientUseCase(patientRepo)
 	examinationUseCase := usecases.NewExaminationUseCase(examinationRepo, analysisRepo, imageRepo, mqPublisher)
-	reportUseCase := usecases.NewReportUseCase(reportRepo, examinationRepo, analysisRepo)
+	reportUseCase := usecases.NewReportUseCase(reportRepo, examinationRepo, analysisRepo, imageRepo)
 	userUseCase := usecases.NewUserUseCase(userRepo)
 
 	patientHandler := handlers.NewPatientHandler(patientUseCase)
