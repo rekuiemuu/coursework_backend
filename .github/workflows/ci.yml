@@ -106,7 +106,7 @@ jobs:
       - name: Test Docker Compose
         working-directory: ./deploy/docker
         run: |
-          docker-compose config
+          docker compose config
           echo "Docker Compose configuration is valid"
 
   security-scan:

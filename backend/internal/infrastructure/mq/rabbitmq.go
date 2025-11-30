@@ -10,6 +10,11 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+const (
+	defaultDialAttempts = 10
+	defaultDialInterval = 3 * time.Second
+)
+
 type RabbitMQ struct {
 	conn    *amqp.Connection
 	channel *amqp.Channel
@@ -17,9 +22,9 @@ type RabbitMQ struct {
 }
 
 func NewRabbitMQ(url, queueName string) (*RabbitMQ, error) {
-	conn, err := amqp.Dial(url)
+	conn, err := dialWithRetry(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
+		return nil, err
 	}
 
 	channel, err := conn.Channel()
@@ -47,6 +52,27 @@ func NewRabbitMQ(url, queueName string) (*RabbitMQ, error) {
 		channel: channel,
 		queue:   queueName,
 	}, nil
+}
+
+func dialWithRetry(url string) (*amqp.Connection, error) {
+	var lastErr error
+	for attempt := 1; attempt <= defaultDialAttempts; attempt++ {
+		conn, err := amqp.Dial(url)
+		if err == nil {
+			if attempt > 1 {
+				log.Printf("Connected to RabbitMQ after %d attempts", attempt)
+			}
+			return conn, nil
+		}
+
+		lastErr = err
+		log.Printf("RabbitMQ connection attempt %d/%d failed: %v", attempt, defaultDialAttempts, err)
+		if attempt < defaultDialAttempts {
+			time.Sleep(defaultDialInterval)
+		}
+	}
+
+	return nil, fmt.Errorf("failed to connect to RabbitMQ after %d attempts: %w", defaultDialAttempts, lastErr)
 }
 
 func (r *RabbitMQ) Close() error {
