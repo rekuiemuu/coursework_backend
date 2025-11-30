@@ -51,10 +51,10 @@ func TestNewUser(t *testing.T) {
 
 func TestUser_Deactivate(t *testing.T) {
 	user := NewUser("1", "user", "email@test.com", "hash", RoleAdmin, "First", "Last")
-	
+
 	before := user.UpdatedAt
 	time.Sleep(10 * time.Millisecond)
-	
+
 	user.Deactivate()
 
 	if user.IsActive {
@@ -72,7 +72,7 @@ func TestUser_Activate(t *testing.T) {
 
 	before := user.UpdatedAt
 	time.Sleep(10 * time.Millisecond)
-	
+
 	user.Activate()
 
 	if !user.IsActive {
@@ -86,10 +86,10 @@ func TestUser_Activate(t *testing.T) {
 
 func TestUser_UpdatePassword(t *testing.T) {
 	user := NewUser("1", "user", "email@test.com", "oldhash", RoleDoctor, "First", "Last")
-	
+
 	before := user.UpdatedAt
 	time.Sleep(10 * time.Millisecond)
-	
+
 	newHash := "newhash"
 	user.UpdatePassword(newHash)
 
@@ -104,7 +104,7 @@ func TestUser_UpdatePassword(t *testing.T) {
 
 func TestUser_FullName(t *testing.T) {
 	user := NewUser("1", "user", "email@test.com", "hash", RoleAdmin, "John", "Smith")
-	
+
 	fullName := user.FullName()
 	expected := "John Smith"
 
